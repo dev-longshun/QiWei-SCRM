@@ -1,4 +1,9 @@
 // 环境变量
+// 构建期在 Node 里跑（无 window），ORIGIN 为空字符串，只影响不被使用的字段；
+// 浏览器里为实际访问源。
+const ORIGIN =
+  typeof window !== 'undefined' && window.location ? window.location.origin : ''
+
 const envs = {
   development: {
     DOMAIN: 'http://127.0.0.1:8085',
@@ -10,10 +15,14 @@ const envs = {
     BASE_URL: '/tools/',
     BASE_API: 'https://show.iyque.cn/iyque',
   },
+  // production 作为兜底环境：DOMAIN 取运行时 origin，因此任何非 development/test
+  // 的访问地址都会命中这里。BASE_API 同源拼接，所以同一份产物在
+  // http://IP（备案期间）和 https://域名（备案后）都能跑，无需重新打包。
+  // 注意必须是绝对地址：mobile/src/views/chat/detail.vue 会用正则从中抠主机名。
   production: {
-    DOMAIN: 'https://qiwei.longjinapi.com',
+    DOMAIN: ORIGIN,
     BASE_URL: '/tools/',
-    BASE_API: 'https://qiwei.longjinapi.com/iyque',
+    BASE_API: ORIGIN + '/iyque',
   },
 }
 

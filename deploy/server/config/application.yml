@@ -1,5 +1,6 @@
 # 生产覆盖配置 —— 经 SPRING_CONFIG_ADDITIONAL_LOCATION 挂载，优先级高于 jar 内的 application.yml
 # 敏感值全部来自环境变量（docker-compose 从 .env 注入），不落明文
+# PUBLIC_BASE 含协议头：备案前 http://122.51.26.145，备案后改成 https://域名
 server:
   port: 8085
 
@@ -9,10 +10,10 @@ iyque:
   demo: false
   uploadDir: /app/upload
   inquiryAll: true
-  fileViewUrl: https://${DOMAIN}/iyque/file/fileView/
-  complaintUrl: https://${DOMAIN}/openmobile/customerComplaint
-  customerSeasUrl: https://${DOMAIN}/openmobile/customerSeas
-  h5MarketUrl: https://${DOMAIN}/openmobile/H5Marketing?id={0}
+  fileViewUrl: ${PUBLIC_BASE}/iyque/file/fileView/
+  complaintUrl: ${PUBLIC_BASE}/openmobile/customerComplaint
+  customerSeasUrl: ${PUBLIC_BASE}/openmobile/customerSeas
+  h5MarketUrl: ${PUBLIC_BASE}/openmobile/H5Marketing?id={0}
 
 spring:
   datasource:

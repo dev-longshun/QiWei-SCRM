@@ -1,6 +1,7 @@
-# 源雀SCRM 生产栈 @ shan-dmit-hk (103.117.101.244)
+# 源雀SCRM 生产栈 @ txyun-longjin (122.51.26.145，腾讯云上海 4C4G)
 # 所有端口只绑 127.0.0.1，对外统一走 nginx
-# 内存上限是必须的：本机已有 24 个容器，可用内存约 4.6G
+# 内存上限按本机 3.6 GiB 收紧：三者合计上限 2.15 GiB，给系统留约 1.4 GiB
+# （香港实测三容器实际只占 610 MB，上限只是防跑飞）
 services:
   mysql:
     image: mysql:8.0.36
@@ -19,12 +20,12 @@ services:
       - --collation-server=utf8mb4_general_ci
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
       - --max_allowed_packet=64M
-      - --innodb-buffer-pool-size=512M
+      - --innodb-buffer-pool-size=256M
       - --performance-schema=OFF
     volumes:
       - ./data/mysql:/var/lib/mysql
       - ./sql/scrm_push.sql:/docker-entrypoint-initdb.d/01-scrm.sql:ro
-    mem_limit: 1200m
+    mem_limit: 800m
     logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
@@ -39,10 +40,10 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:${REDIS_PORT}:6379"
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "96mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
       - ./data/redis:/data
-    mem_limit: 200m
+    mem_limit: 150m
     logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -55,9 +56,9 @@ services:
     container_name: qiwei-backend
     restart: unless-stopped
     working_dir: /app
-    # -Xmx1g：本机内存紧张，不能让 JVM 按默认吃掉物理内存的 1/4
+    # -Xmx768m：本机 3.6G，不能让 JVM 按默认吃掉物理内存的 1/4
     command: >
-      java -Xms256m -Xmx1g -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai
+      java -Xms256m -Xmx768m -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai
       -jar /app/app.jar
     environment:
       TZ: Asia/Shanghai
@@ -69,13 +70,14 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       DOMAIN: ${DOMAIN}
+      PUBLIC_BASE: ${PUBLIC_BASE}
     volumes:
       - ./app/app.jar:/app/app.jar:ro
       - ./config:/app/config:ro
       - ./upload:/app/upload
     ports:
       - "127.0.0.1:${BACKEND_PORT}:8085"
-    mem_limit: 1500m
+    mem_limit: 1200m
     logging: { driver: json-file, options: { max-size: "20m", max-file: "5" } }
     depends_on:
       mysql: { condition: service_healthy }

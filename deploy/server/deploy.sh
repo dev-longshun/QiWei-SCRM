@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# 源雀SCRM 部署/更新脚本（在本机 Mac 上运行，推送到 shan-dmit-hk）
+# 源雀SCRM 部署/更新脚本（在本机 Mac 上运行，推送到 txyun-longjin 腾讯云上海）
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-KEY="/Users/longshun/Desktop/Program/00_use/vps/RelayTeamVps/shan-dmit-hk/DMIT-h3RXuBHvkV-ed25519/id_rsa.pem"
-HOST="root@103.117.101.244"
+KEY="/Users/longshun/Desktop/Program/00_use/vps/txyun-longjin/claude-txyun-longjin-ed25519"
+HOST="root@122.51.26.145"
 SSH="/usr/bin/ssh -o StrictHostKeyChecking=no -i $KEY"
 APP=/root/qiwei-scrm
 WEB=/var/www/qiwei
@@ -30,4 +30,4 @@ $SSH $HOST "cd $APP && docker compose up -d && docker compose restart backend"
 echo "[5/5] 校验"
 sleep 8
 $SSH $HOST "cd $APP && docker compose ps"
-curl -s -o /dev/null -w "https://qiwei.longjinapi.com/tools/  => %{http_code}\n" https://qiwei.longjinapi.com/tools/
+curl -s -o /dev/null -w "http://122.51.26.145/tools/  => %{http_code}\n" http://122.51.26.145/tools/
