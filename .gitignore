@@ -26,3 +26,10 @@ dist
 icode-ui/deploy/
 frontEnd/mobile/deploy/deploy.config.mjs
 frontEnd/pc/deploy/deploy.config.mjs
+
+# ---- 本地部署新增 ----
+target/
+upload/
+deploy/logs/
+deploy/sql/*.sql
+.DS_Store
