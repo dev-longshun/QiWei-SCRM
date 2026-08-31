@@ -33,3 +33,4 @@ upload/
 deploy/logs/
 deploy/sql/*.sql
 .DS_Store
+deploy/server/.env

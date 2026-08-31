@@ -1,0 +1,82 @@
+# 源雀SCRM 生产栈 @ shan-dmit-hk (103.117.101.244)
+# 所有端口只绑 127.0.0.1，对外统一走 nginx
+# 内存上限是必须的：本机已有 24 个容器，可用内存约 4.6G
+services:
+  mysql:
+    image: mysql:8.0.36
+    container_name: qiwei-mysql
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MYSQL_PORT}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --max_allowed_packet=64M
+      - --innodb-buffer-pool-size=512M
+      - --performance-schema=OFF
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./sql/scrm_push.sql:/docker-entrypoint-initdb.d/01-scrm.sql:ro
+    mem_limit: 1200m
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  redis:
+    image: redis:7-alpine
+    container_name: qiwei-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REDIS_PORT}:6379"
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - ./data/redis:/data
+    mem_limit: 200m
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    image: eclipse-temurin:17-jre
+    container_name: qiwei-backend
+    restart: unless-stopped
+    working_dir: /app
+    # -Xmx1g：本机内存紧张，不能让 JVM 按默认吃掉物理内存的 1/4
+    command: >
+      java -Xms256m -Xmx1g -XX:+UseSerialGC -Duser.timezone=Asia/Shanghai
+      -jar /app/app.jar
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/app/config/
+      IYQUE_JWT_SECRET: ${IYQUE_JWT_SECRET}
+      IYQUE_ADMIN_USER: ${IYQUE_ADMIN_USER}
+      IYQUE_ADMIN_PWD: ${IYQUE_ADMIN_PWD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./app/app.jar:/app/app.jar:ro
+      - ./config:/app/config:ro
+      - ./upload:/app/upload
+    ports:
+      - "127.0.0.1:${BACKEND_PORT}:8085"
+    mem_limit: 1500m
+    logging: { driver: json-file, options: { max-size: "20m", max-file: "5" } }
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }

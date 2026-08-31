@@ -8,9 +8,9 @@ const envs = {
     BASE_API: 'http://127.0.0.1:8085', // 接口基础路径
   },
   production: {
-    DOMAIN: 'https://iyque.cn',
+    DOMAIN: 'https://qiwei.longjinapi.com',
     BASE_URL: '/openmobile/',
-    BASE_API: 'https://iyque.cn/iyque',
+    BASE_API: 'https://qiwei.longjinapi.com/iyque',
   },
 }
 

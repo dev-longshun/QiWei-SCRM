@@ -10,7 +10,27 @@ import java.util.Date;
 import java.util.function.Function;
 
 public class JwtUtils {
-    private static final String SECRET_KEY = "iYqueSecretKeyForJwtTokenGenerationAndValidation";
+    /**
+     * 上游把密钥硬编码在源码里并公开在 GitHub 上，任何人都能对任意源雀部署伪造管理员 token。
+     * 改为优先读环境变量 IYQUE_JWT_SECRET / 系统属性 iyque.jwt-secret，
+     * 都没有时才回退到上游默认值（仅供本地开发；生产必须覆盖）。
+     * 注意：签名算法为 HS384，密钥长度必须 >= 48 字节。
+     */
+    private static final String SECRET_KEY = resolveSecret();
+
+    private static String resolveSecret() {
+        String s = System.getenv("IYQUE_JWT_SECRET");
+        if (s == null || s.trim().isEmpty()) {
+            s = System.getProperty("iyque.jwt-secret");
+        }
+        if (s == null || s.trim().isEmpty()) {
+            return "iYqueSecretKeyForJwtTokenGenerationAndValidation";
+        }
+        if (s.getBytes(java.nio.charset.StandardCharsets.UTF_8).length < 48) {
+            throw new IllegalStateException("IYQUE_JWT_SECRET 长度不足 48 字节，HS384 要求密钥 >= 384 bit");
+        }
+        return s;
+    }
     private static final long EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000;
 
     private static SecretKey getSigningKey() {

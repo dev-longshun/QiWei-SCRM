@@ -11,9 +11,9 @@ const envs = {
     BASE_API: 'https://show.iyque.cn/iyque',
   },
   production: {
-    DOMAIN: 'https://iyque.cn',
+    DOMAIN: 'https://qiwei.longjinapi.com',
     BASE_URL: '/tools/',
-    BASE_API: 'https://iyque.cn/iyque',
+    BASE_API: 'https://qiwei.longjinapi.com/iyque',
   },
 }
 
