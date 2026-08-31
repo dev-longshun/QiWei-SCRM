@@ -34,3 +34,11 @@ deploy/logs/
 deploy/sql/*.sql
 .DS_Store
 deploy/server/.env
+
+# ---- Agent 协作（Claude / Codex / Grok）----
+# Codex app 自动生成的 skill 副本（可再生，真源在 .claude/skills）
+.agents/
+# Claude Code 本地权限设置（每台机器不同）
+.claude/settings.local.json
+# bug-patrol 排查追踪（项目内部记录，不入仓）
+00_debug-notes/
