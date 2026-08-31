@@ -1,5 +1,5 @@
 <script>
-import { getCosConfig, getVideoPic, upload } from '@/api/common'
+import { getCosConfig, upload } from '@/api/common'
 import { dateFormat, uuid } from '@/utils/index'
 
 import { ImagePreview } from 'vant'
