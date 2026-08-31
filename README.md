@@ -1,3 +1,22 @@
+> ## 关于本仓库
+>
+> 本仓库是 [IYque/Iyque-SCRM](https://github.com/IYque/Iyque-SCRM)（源雀 SCRM 开源版，Apache 2.0）的二次部署版本，
+> 用于自有企业微信的私有化部署。上游代码版权归合肥冠策网络科技有限公司所有，本仓库保留其 LICENSE 与产品标识。
+>
+> **相对上游的改动**（依 Apache 2.0 第 4 条声明）：
+>
+> | 文件 | 改动 |
+> |---|---|
+> | `frontEnd/mobile/src/components/Upload.vue` | 删除对 `@/api/common` 中不存在的 `getVideoPic` 的死导入，该导入会导致 vite dev 启动失败 |
+> | `frontEnd/mobile/src/config.js` | 更新硬编码的开发用 JWT（上游提交的那个已于 2026-03-10 过期） |
+> | `frontEnd/pc/package-lock.json` | 由 `npm install --legacy-peer-deps` 重新生成 |
+> | `.gitignore` | 增加 `target/`、`upload/`、`deploy/logs/` 等 |
+> | `deploy/`（新增） | 本机部署脚手架：docker-compose、启停脚本、部署文档 |
+>
+> 部署方法见 [`deploy/部署说明.md`](deploy/部署说明.md)。上游原始 README 如下。
+
+---
+
 ![banner](pic/banner0609.png)
 
 <div align="center">
